@@ -20,7 +20,8 @@ export default {
             livestream: /^https?:\/\/(?:www\.)?livestream\.com\/accounts\/[0-9]+\/events\/[0-9]+$/g,
 			netplus: /^https?:\/\/viamotionhsi\.netplus\.ch\/live\/eds\/.*\/browser-.*\/.*\..*$/g,
             arezzotv: /^https?:\/\/(?:www\.)?arezzotv\.it.*$/g,
-            livetvuk: /^https?:\/\/(?:www\.)?livetvuk\.com\/yayin\/.*$/g
+            livetvuk: /^https?:\/\/(?:www\.)?livetvuk\.com\/yayin\/.*$/g,
+            turner: /^https?:\/\/feapi.turner.streamity.com\/api\/v1\/Config\/getConfig\?platformId=[a-zA-Z0-9-]{36}$/g
         };
         
         const vercelURLRegexes = {
@@ -179,6 +180,28 @@ export default {
                                     });
                                     errorStatus = 500;
                                 });
+                            break;
+
+                        case "turner":
+                            await fetch(specifiedURL, {
+                                headers: {
+                                    "X-Functions-Key": "pc__I4Ronpm-n4la827RuyTSaCKlFQ4a_2ssh4GEfY3EAzFu1gpYAA=="
+                                }
+                            })
+                                .then(response => response.json())
+                                .then(json => {
+                                    requestStatus = "redirect";
+									response = json.HomeLive.publishUrlStreamingHls;
+                                })
+                                .catch(err => {
+                                    requestStatus = false;
+                                    errorJSON = JSON.stringify({
+                                        error: "Impossibile recuperare l'URL della stream.",
+                                        info: specifiedURL
+                                    });
+                                    errorStatus = 500;
+                                });
+
                             break;
                     };
     
