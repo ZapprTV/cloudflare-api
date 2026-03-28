@@ -17,8 +17,6 @@ export default {
         const urlRegex = /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/;
         const supportedURLRegexes = {
             dailymotion: /^https?:\/\/(?:www\.)?dailymotion\.com\/video\/[a-zA-Z0-9]+$/g,
-            livestream: /^https?:\/\/(?:www\.)?livestream\.com\/accounts\/[0-9]+\/events\/[0-9]+$/g,
-			netplus: /^https?:\/\/viamotionhsi\.netplus\.ch\/live\/eds\/.*\/browser-.*\/.*\..*$/g,
             arezzotv: /^https?:\/\/(?:www\.)?arezzotv\.it.*$/g,
             livetvuk: /^https?:\/\/(?:www\.)?livetvuk\.com\/yayin\/.*$/g,
             turner: /^https?:\/\/feapi.turner.streamity.com\/api\/v1\/Config\/getConfig\?platformId=[a-zA-Z0-9-]{36}$/g
@@ -102,43 +100,6 @@ export default {
                                     errorStatus = 500;
                                 });
                             break;
-
-                        case "livestream":
-                            await fetch(`https://player-api.new.livestream.com${new URL(specifiedURL).pathname}/stream_info`)
-                                .then(response => response.json())
-                                .then(async (json) => {
-                                    await fetch(json.secure_m3u8_url)
-                                        .then(response => response.url)
-                                        .then(url => {
-                                            requestStatus = "redirect";
-                                            response = url;
-                                        });
-                                })
-                                .catch(err => {
-                                    requestStatus = false;
-                                    errorJSON = JSON.stringify({
-                                        error: "Impossibile recuperare l'URL della stream.",
-                                        info: specifiedURL
-                                    });
-                                    errorStatus = 500;
-                                });
-                            break;
-
-						case "netplus":
-							await fetch(specifiedURL)
-								.then(netplusResponse => {
-									requestStatus = "redirect";
-									response = netplusResponse.url;
-								})
-								.catch(err => {
-                                    requestStatus = false;
-                                    errorJSON = JSON.stringify({
-                                        error: "Impossibile recuperare l'URL della stream.",
-                                        info: specifiedURL
-                                    });
-                                    errorStatus = 500;
-                                });
-							break;
 
                         case "arezzotv":
                             var { parseHTML } = await import("linkedom");
