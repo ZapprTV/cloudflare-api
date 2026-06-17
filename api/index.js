@@ -21,7 +21,8 @@ export default {
 			netplus: /^https?:\/\/viamotionhsi\.netplus\.ch\/live\/eds\/.*\/browser-.*\/.*\..*$/g,
             arezzotv: /^https?:\/\/(?:www\.)?arezzotv\.it.*$/g,
             livetvuk: /^https?:\/\/(?:www\.)?livetvuk\.com\/yayin\/.*$/g,
-            turner: /^https?:\/\/feapi.turner.streamity.com\/api\/v1\/Config\/getConfig\?platformId=[a-zA-Z0-9-]{36}$/g
+            turner: /^https?:\/\/feapi.turner.streamity.com\/api\/v1\/Config\/getConfig\?platformId=[a-zA-Z0-9-]{36}$/g,
+            equtv: /^https?:\/\/(?:www\.)?grandeippicaitaliana\.it\/live-streaming(?:\/)?$/g
         };
         
         const vercelURLRegexes = {
@@ -202,6 +203,26 @@ export default {
                                     errorStatus = 500;
                                 });
 
+                            break;
+
+                        case "equtv":
+                            var { parseHTML } = await import("linkedom");
+                            await fetch(specifiedURL)
+                                .then(response => response.text())
+                                .then(html => {
+                                    const videoPlayerData = JSON.parse(atob(parseHTML(html).document.querySelector("#hls-player-script-js-after").innerText.replace(/.* = '/g, "").replaceAll(/'.*/gs, "")));
+
+                                    requestStatus = "redirect";
+									response = videoPlayerData.src;
+                                })
+                                .catch(err => {
+                                    requestStatus = false;
+                                    errorJSON = JSON.stringify({
+                                        error: "Couldn't get the stream URL.",
+                                        info: err.stack
+                                    });
+                                    errorStatus = 500;
+                                });
                             break;
                     };
     
